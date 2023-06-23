@@ -70,9 +70,7 @@ def check_build():
         try:
             os.makedirs(build_dir)
         except OSError as exc:
-            if exc.errno == errno.EEXIST:
-                pass
-            else:
+            if exc.errno != errno.EEXIST:
                 raise
 
 def update_config(file, str):
@@ -85,13 +83,13 @@ def scan_configs():
     """Get the full list of defconfigs appropriate for this tree."""
     names = {}
     arch_pats = (
-        r'[fm]sm[0-9]*_defconfig',
-        r'apq*_defconfig',
-        r'qsd*_defconfig',
-	r'msmkrypton*_defconfig',
-        )
+    r'[fm]sm[0-9]*_defconfig',
+    r'apq*_defconfig',
+    r'qsd*_defconfig',
+    r'msmkrypton*_defconfig',
+    )
     for p in arch_pats:
-        for n in glob.glob('arch/arm/configs/' + p):
+        for n in glob.glob(f'arch/arm/configs/{p}'):
             names[os.path.basename(n)[:-10]] = n
     return names
 
@@ -118,15 +116,14 @@ class Builder:
             self.fd.flush()
             if all_options.verbose:
                 sys.stdout.write(line)
-                sys.stdout.flush()
             else:
-                for i in range(line.count('\n')):
+                for _ in range(line.count('\n')):
                     count += 1
                     if count == 64:
                         count = 0
                         print
                     sys.stdout.write('.')
-                sys.stdout.flush()
+            sys.stdout.flush()
         print
         result = proc.wait()
 
